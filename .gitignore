@@ -1,0 +1,8 @@
+__pycache__/
+.venv/
+data/raw/
+
+# entregables que no van al repositorio de codigo
+*.docx
+*.pptx
+links.txt

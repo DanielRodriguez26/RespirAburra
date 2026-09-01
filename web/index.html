@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RespirAburrá — el aire del Valle de Aburrá, medido</title>
+<meta name="description" content="Un año de mediciones de PM2.5 de las 18 estaciones de SIATA en el Valle de Aburrá, convertidas en indicadores y gráficas que cualquiera puede leer.">
+<meta name="theme-color" content="#0B1A24">
+<meta property="og:title" content="RespirAburrá">
+<meta property="og:description" content="¿Qué aire respiramos en el Valle de Aburrá? Un año de PM2.5 medido por SIATA.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Crect width='44' height='44' rx='9' fill='%230B1A24'/%3E%3Cpath d='M3 37 L15.5 9 L22 22.5 L28.5 7 L41 37' fill='none' stroke='%23E9EEF0' stroke-width='3.2' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cg fill='%233FAEC9'%3E%3Crect x='9' y='24.5' width='26' height='3' rx='1.5'/%3E%3Crect x='13' y='30' width='18' height='3' rx='1.5'/%3E%3Crect x='17' y='35.5' width='10' height='3' rx='1.5'/%3E%3C/g%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   RespirAburrá — hoja de estilos
+   Principio de color: todo el "cromo" de la página es frío
+   (azules de montaña y niebla). Los tonos cálidos están
+   reservados exclusivamente para la señal de calidad del aire,
+   así cualquier color cálido en pantalla significa siempre lo mismo.
+   ============================================================ */
+:root{
+  --noche:#0B1A24;      /* fondo del valle */
+  --ladera:#14303F;     /* laderas */
+  --ladera-2:#0F2836;   /* laderas del fondo */
+  --niebla:#E9EEF0;     /* fondo de página */
+  --papel:#FFFFFF;
+  --tinta:#10222D;
+  --tenue:#5A7181;
+  --linea:#D6DFE4;
+  --linea-suave:#E8EEF1;
+  --aire:#22758C;       /* acento frío: el dato */
+  --aire-claro:#3FAEC9;
+
+  /* escala de señal ICA (Resolución 2254 de 2017) */
+  --ica-1:#3FA34D;      /* Buena */
+  --ica-2:#E4B22B;      /* Aceptable */
+  --ica-3:#E07C2B;      /* Dañina para grupos sensibles */
+  --ica-4:#CB4034;      /* Dañina para la salud */
+
+  --r:10px;
+  --ancho:1120px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+  background:var(--niebla); color:var(--tinta);
+  font-size:16px; line-height:1.55;
+  font-variant-numeric:tabular-nums;
+}
+h1,h2,h3,.cifra,.marca-nombre{font-family:'Archivo','IBM Plex Sans',system-ui,sans-serif;letter-spacing:-.02em}
+a{color:var(--aire)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--aire-claro);outline-offset:2px;border-radius:4px}
+.contenedor{max-width:var(--ancho);margin:0 auto;padding:0 20px}
+
+/* ---------- barra superior ---------- */
+.barra{
+  background:var(--noche); color:var(--niebla);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.barra .contenedor{display:flex;align-items:center;gap:12px;height:60px}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.marca svg{width:32px;height:32px;flex:none}
+.marca-nombre{font-size:1.12rem;font-weight:800}
+.marca-nombre span{color:var(--aire-claro)}
+.barra-tag{
+  margin-left:auto;font-size:.78rem;color:#9FB4C0;
+  border:1px solid rgba(255,255,255,.16);border-radius:99px;padding:4px 12px;
+  text-decoration:none;
+}
+.barra-tag:hover{border-color:var(--aire-claro);color:#fff}
+
+/* ---------- portada ---------- */
+.portada{background:var(--noche);color:#E9EEF0;padding:42px 0 0;overflow:hidden}
+.portada-cabeza{display:grid;grid-template-columns:1.02fr .98fr;gap:16px 42px;align-items:end}
+.portada h1{
+  font-size:clamp(1.9rem,4.4vw,2.95rem); font-weight:800; line-height:1.05;
+  max-width:15ch;
+}
+.portada .entrada{color:#A9BDC8;max-width:56ch;font-size:1rem;padding-bottom:5px}
+.portada .entrada b{color:#E9EEF0;font-weight:600}
+
+/* corte del valle */
+.valle{margin-top:14px;position:relative}
+.valle svg{display:block;width:100%;height:auto}
+.valle-pie{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;
+  padding:14px 0 22px;border-top:1px solid rgba(255,255,255,.1);
+  font-size:.9rem;color:#A9BDC8;
+}
+.valle-pie .lectura{color:#E9EEF0;font-size:1rem}
+.valle-pie .lectura b{font-family:'Archivo',sans-serif;font-weight:800;font-size:1.28rem;letter-spacing:-.02em}
+.valle-pie .aclaracion{margin-left:auto;font-size:.8rem;color:#7D96A4}
+.punto-est{cursor:pointer}
+.punto-est:hover circle,.punto-est:focus-visible circle{stroke:#fff;stroke-width:2.4}
+
+/* ---------- filtros ---------- */
+.filtros{background:var(--papel);border-bottom:1px solid var(--linea);padding:14px 0}
+.filtros .fila{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:5px 0}
+.filtros .fila[hidden]{display:none}
+.filtros .rotulo{
+  font-size:.82rem;color:var(--tenue);min-width:76px;font-weight:500;
+}
+.chip{
+  border:1px solid var(--linea);background:var(--papel);color:#3A4E5B;
+  border-radius:99px;padding:5px 13px;cursor:pointer;font-size:.86rem;
+  transition:border-color .15s,background .15s,color .15s;
+}
+.chip:hover{border-color:var(--aire);color:var(--aire)}
+.chip[aria-pressed="true"]{background:var(--aire);border-color:var(--aire);color:#fff}
+.chip-estacion{
+  background:#FFF6DE;border-color:#E4B22B;color:#6B5310;font-weight:500;
+}
+.chip-estacion:hover{background:#FFEFC4;border-color:#C99A1C;color:#6B5310}
+
+/* ---------- cuerpo ---------- */
+main{padding:26px 0 10px}
+.rejilla-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{
+  background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);
+  padding:15px 16px 14px;
+}
+.kpi .cifra{font-size:1.75rem;font-weight:700;line-height:1.1;color:var(--tinta)}
+.kpi .cifra u{text-decoration:none;font-size:.92rem;font-weight:600;color:var(--tenue);margin-left:3px}
+.kpi .rotulo{font-size:.83rem;color:var(--tenue);margin-top:5px}
+.kpi .barrita{height:4px;background:var(--linea-suave);border-radius:99px;margin-top:10px;overflow:hidden}
+.kpi .barrita i{display:block;height:100%;background:var(--aire);border-radius:99px}
+
+/* ---------- pestañas ---------- */
+.pestanas{display:flex;gap:2px;margin:26px 0 -1px;overflow-x:auto;scrollbar-width:none}
+.pestanas::-webkit-scrollbar{display:none}
+.pestana{
+  border:1px solid transparent;border-bottom:none;background:none;
+  padding:10px 18px;border-radius:var(--r) var(--r) 0 0;cursor:pointer;
+  font-size:.93rem;font-weight:500;color:var(--tenue);white-space:nowrap;
+}
+.pestana:hover{color:var(--aire)}
+.pestana[aria-selected="true"]{
+  background:var(--papel);border-color:var(--linea);color:var(--tinta);font-weight:600;
+}
+.tablero{
+  background:var(--papel);border:1px solid var(--linea);
+  border-radius:0 var(--r) var(--r) var(--r);padding:22px 22px 24px;
+}
+.tablero[hidden]{display:none}
+.bloque + .bloque{margin-top:30px;padding-top:26px;border-top:1px solid var(--linea-suave)}
+.bloque h2{font-size:1.08rem;font-weight:700}
+.bloque .nota{color:var(--tenue);font-size:.87rem;margin-top:3px;max-width:70ch}
+.grafica{width:100%;margin-top:12px;min-height:60px}
+.par{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:start}
+
+/* ---------- tabla ---------- */
+.tabla-envoltura{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:.89rem}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--linea-suave);vertical-align:middle}
+th{
+  font-size:.76rem;font-weight:600;color:var(--tenue);
+  border-bottom:1px solid var(--linea);
+}
+td.num,th.num{text-align:right;white-space:nowrap}
+tbody tr:hover{background:#F6F9FA}
+.celda-barra{width:34%;min-width:110px}
+.barra-valor{height:8px;background:var(--linea-suave);border-radius:99px;position:relative}
+.barra-valor i{display:block;height:100%;border-radius:99px}
+.barra-valor u{
+  position:absolute;top:-3px;width:2px;height:14px;border-radius:1px;
+  background:var(--tinta);opacity:.4;text-decoration:none;
+}
+.insignia{
+  display:inline-block;padding:2px 9px;border-radius:99px;color:#fff;
+  font-size:.76rem;font-weight:500;white-space:nowrap;
+}
+.enlace-tabla{background:none;border:none;padding:0;cursor:pointer;text-align:left;color:var(--tinta);font-weight:500}
+.enlace-tabla:hover{color:var(--aire);text-decoration:underline}
+
+/* ---------- hallazgos ---------- */
+.hallazgos{margin-top:26px;background:var(--papel);border:1px solid var(--linea);border-radius:var(--r);padding:22px}
+.hallazgos h2{font-size:1.08rem;font-weight:700}
+.hallazgos .nota{color:var(--tenue);font-size:.87rem;margin-top:3px}
+.lista-hallazgos{list-style:none;margin-top:14px}
+.lista-hallazgos li{
+  display:flex;gap:14px;align-items:baseline;
+  padding:11px 0;border-top:1px solid var(--linea-suave);
+}
+.lista-hallazgos li:first-child{border-top:none}
+.lista-hallazgos .dato{
+  font-family:'Archivo',sans-serif;font-weight:700;font-size:1.05rem;
+  min-width:104px;flex:none;color:var(--aire);letter-spacing:-.02em;
+}
+.lista-hallazgos p{font-size:.93rem}
+
+/* ---------- explicación ---------- */
+.explica{
+  margin-top:14px;background:var(--papel);border:1px solid var(--linea);
+  border-radius:var(--r);padding:0 20px;
+}
+.explica summary{
+  cursor:pointer;padding:15px 0;font-weight:600;font-size:.95rem;
+  list-style:none;display:flex;align-items:center;gap:9px;
+}
+.explica summary::-webkit-details-marker{display:none}
+.explica summary::before{
+  content:"";width:9px;height:9px;flex:none;border-right:2px solid var(--aire);
+  border-bottom:2px solid var(--aire);transform:rotate(-45deg);transition:transform .2s;
+}
+.explica[open] summary::before{transform:rotate(45deg)}
+.explica .cuerpo{padding:0 0 18px;font-size:.92rem;color:#3A4E5B;max-width:76ch}
+.explica .cuerpo p + p{margin-top:9px}
+.escala{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.escala span{
+  font-size:.78rem;padding:3px 10px;border-radius:99px;color:#fff;
+}
+
+/* ---------- vacío ---------- */
+.vacio{text-align:center;padding:44px 20px;color:var(--tenue)}
+.vacio strong{display:block;color:var(--tinta);font-size:1.02rem;margin-bottom:5px;font-weight:600}
+.vacio button{
+  margin-top:14px;background:var(--aire);color:#fff;border:none;
+  border-radius:99px;padding:8px 18px;cursor:pointer;font-size:.9rem;font-weight:500;
+}
+
+/* ---------- pie ---------- */
+footer{background:var(--noche);color:#A9BDC8;margin-top:38px;padding:34px 0}
+footer .rejilla{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;font-size:.86rem}
+footer h3{
+  font-size:.86rem;font-weight:700;color:#E9EEF0;margin-bottom:8px;
+}
+footer a{color:var(--aire-claro)}
+footer ul{list-style:none}
+footer li{padding:2px 0}
+footer .credito{
+  margin-top:26px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);
+  font-size:.8rem;color:#7D96A4;
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width:900px){
+  .rejilla-kpi{grid-template-columns:repeat(2,1fr)}
+  .par{grid-template-columns:1fr;gap:24px}
+  footer .rejilla{grid-template-columns:1fr;gap:20px}
+  .valle-pie .aclaracion{margin-left:0;width:100%}
+  .portada-cabeza{grid-template-columns:1fr}
+  .portada h1{max-width:20ch}
+}
+@media (max-width:620px){
+  .etq-mun{display:none}
+}
+@media (max-width:560px){
+  .rejilla-kpi{grid-template-columns:1fr;gap:10px}
+  .kpi{padding:12px 14px 11px}
+  .kpi .cifra{font-size:1.5rem}
+  .tablero{padding:18px 15px 20px}
+  .filtros .rotulo{min-width:100%}
+  .lista-hallazgos li{flex-direction:column;gap:2px}
+  .lista-hallazgos .dato{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ barra superior ============ -->
+<div class="barra">
+  <div class="contenedor">
+    <a class="marca" href="#">
+      <svg viewBox="0 0 44 44" aria-hidden="true">
+        <path d="M3 37 L15.5 9 L22 22.5 L28.5 7 L41 37" fill="none" stroke="#E9EEF0"
+              stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>
+        <g fill="#3FAEC9">
+          <rect x="9" y="24.5" width="26" height="3" rx="1.5"/>
+          <rect x="13" y="30" width="18" height="3" rx="1.5" opacity=".85"/>
+          <rect x="17" y="35.5" width="10" height="3" rx="1.5" opacity=".72"/>
+        </g>
+      </svg>
+      <span class="marca-nombre">Respir<span>Aburrá</span></span>
+    </a>
+    <a class="barra-tag" id="link_app" href="#">Versión con IA y chat</a>
+  </div>
+</div>
+
+<!-- ============ portada ============ -->
+<header class="portada">
+  <div class="contenedor">
+    <div class="portada-cabeza">
+      <h1>El aire que respira el Valle de Aburrá</h1>
+      <p class="entrada">
+        Un año de mediciones de material particulado PM2.5 en las <b>18 estaciones</b> de la red de
+        SIATA, entre octubre de 2021 y octubre de 2022. Los datos originales son un archivo técnico
+        de 180.000 registros; aquí están traducidos a algo que se puede leer de un vistazo.
+      </p>
+    </div>
+
+    <!-- corte esquemático del valle: la niebla sube con el PM2.5 -->
+    <div class="valle">
+      <svg id="svg_valle" viewBox="0 28 1200 302" preserveAspectRatio="xMidYMid meet"
+           role="img" aria-labelledby="valle_titulo valle_desc">
+        <title id="valle_titulo">Corte esquemático del Valle de Aburrá</title>
+        <desc id="valle_desc">La capa de niebla sube o baja según el PM2.5 promedio del filtro seleccionado.</desc>
+
+        <defs>
+          <clipPath id="clip_aire">
+            <path d="M0,0 H1200 V150 C1158,122 1120,84 1082,72 C1042,60 1012,94 968,140
+                     C938,170 916,232 882,254 L318,254 C284,232 262,170 232,140
+                     C188,94 158,60 118,72 C80,84 42,122 0,150 Z"/>
+          </clipPath>
+          <linearGradient id="grad_niebla" x1="0" y1="0" x2="0" y2="1">
+            <stop id="niebla_top" offset="0%"  stop-color="#3FAEC9" stop-opacity=".18"/>
+            <stop id="niebla_mid" offset="55%" stop-color="#3FAEC9" stop-opacity=".42"/>
+            <stop id="niebla_bot" offset="100%" stop-color="#3FAEC9" stop-opacity=".7"/>
+          </linearGradient>
+        </defs>
+
+        <!-- laderas del fondo -->
+        <path fill="#0F2836" d="M0,330 V178 C56,150 104,104 160,96 C214,88 250,132 300,180
+                 C330,208 352,240 380,258 L820,258 C852,240 872,206 902,178
+                 C950,132 990,86 1044,96 C1100,106 1150,152 1200,182 V330 Z"/>
+
+        <!-- laderas del frente -->
+        <path fill="#14303F" d="M0,330 V150 C42,122 80,84 118,72 C158,60 188,94 232,140
+                 C262,170 284,232 318,254 L882,254 C916,232 938,170 968,140
+                 C1012,94 1042,60 1082,72 C1120,84 1158,122 1200,150 V330 Z"/>
+
+        <!-- niebla: la altura de la capa es el PM2.5 promedio -->
+        <rect id="niebla" x="0" y="254" width="1200" height="0"
+              fill="url(#grad_niebla)" clip-path="url(#clip_aire)"/>
+        <line id="niebla_borde" x1="0" x2="1200" y1="254" y2="254"
+              stroke="#E4B22B" stroke-width="2.5" clip-path="url(#clip_aire)"/>
+
+        <!-- línea de referencia de la OMS -->
+        <g id="linea_oms">
+          <line x1="330" x2="870" y1="0" y2="0" stroke="#E9EEF0" stroke-width="1.2"
+                stroke-dasharray="5 6" opacity=".6"/>
+          <text x="870" y="-9" text-anchor="end" fill="#B7C9D3" font-size="15"
+                font-family="IBM Plex Sans, sans-serif">guía diaria de la OMS · 15 µg/m³</text>
+        </g>
+
+        <!-- suelo del valle -->
+        <line x1="318" x2="882" y1="254" y2="254" stroke="#2C4C5D" stroke-width="1.5"/>
+
+        <!-- estaciones y etiquetas de municipio -->
+        <g id="estaciones_valle"></g>
+        <g id="municipios_valle"></g>
+      </svg>
+    </div>
+
+    <div class="valle-pie">
+      <p class="lectura" id="lectura" aria-live="polite">Cargando mediciones…</p>
+      <p class="aclaracion">Corte esquemático, no a escala. Las estaciones van de sur (Caldas) a norte (Barbosa).</p>
+    </div>
+  </div>
+</header>
+
+<!-- ============ filtros ============ -->
+<div class="filtros">
+  <div class="contenedor">
+    <div class="fila">
+      <span class="rotulo" id="rot_mun">Municipio</span>
+      <span id="chips_municipio" role="group" aria-labelledby="rot_mun"></span>
+    </div>
+    <div class="fila">
+      <span class="rotulo" id="rot_per">Periodo</span>
+      <span id="chips_periodo" role="group" aria-labelledby="rot_per"></span>
+    </div>
+    <div class="fila" id="fila_estacion" hidden>
+      <span class="rotulo" id="rot_est">Estación</span>
+      <span id="chip_estacion" role="group" aria-labelledby="rot_est"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ cuerpo ============ -->
+<main class="contenedor">
+
+  <div class="rejilla-kpi" id="kpis"></div>
+
+  <details class="explica">
+    <summary>¿Qué es el PM2.5 y por qué importa?</summary>
+    <div class="cuerpo">
+      <p>Son partículas de menos de 2,5 micras: unas 30 veces más finas que un cabello. Por su
+        tamaño no se quedan en la nariz, llegan directo a los pulmones y de ahí pasan a la sangre.
+        Es el contaminante del aire con mayor efecto documentado sobre la salud, sobre todo en
+        niños, adultos mayores y personas con enfermedades respiratorias o cardiovasculares.</p>
+      <p>Aquí se usan dos referencias distintas. La <b>guía de la OMS</b> (15 µg/m³ de promedio
+        diario) es una recomendación de salud. La <b>norma colombiana</b> (37 µg/m³) es el límite
+        legal. El <b>ICA</b> es la escala oficial de categorías de la Resolución 2254 de 2017:</p>
+      <div class="escala">
+        <span style="background:#3FA34D">Buena · hasta 12,5</span>
+        <span style="background:#E4B22B">Aceptable · 12,6 a 37,5</span>
+        <span style="background:#E07C2B">Dañina para grupos sensibles · 37,6 a 55,4</span>
+        <span style="background:#CB4034">Dañina para la salud · más de 55,4</span>
+      </div>
+    </div>
+  </details>
+
+  <div class="pestanas" role="tablist" aria-label="Vistas del análisis">
+    <button class="pestana" role="tab" id="tab_tendencia"  aria-selected="true"  aria-controls="panel_tendencia">Tendencia</button>
+    <button class="pestana" role="tab" id="tab_estaciones" aria-selected="false" aria-controls="panel_estaciones" tabindex="-1">Estaciones</button>
+    <button class="pestana" role="tab" id="tab_patrones"   aria-selected="false" aria-controls="panel_patrones"   tabindex="-1">Patrones</button>
+  </div>
+
+  <section class="tablero" id="panel_tendencia" role="tabpanel" aria-labelledby="tab_tendencia" tabindex="0">
+    <div class="bloque">
+      <h2>Cómo cambió el aire día a día</h2>
+      <p class="nota">Promedio diario de las estaciones seleccionadas, contra la guía de la OMS y la norma colombiana.</p>
+      <div id="g_serie" class="grafica"></div>
+    </div>
+    <div class="bloque">
+      <h2>En qué categoría del ICA quedó cada día</h2>
+      <p class="nota">Cada barra cuenta los días-estación que cayeron en cada categoría oficial de la Resolución 2254 de 2017.</p>
+      <div id="g_ica" class="grafica"></div>
+    </div>
+  </section>
+
+  <section class="tablero" id="panel_estaciones" role="tabpanel" aria-labelledby="tab_estaciones" tabindex="0" hidden>
+    <div class="bloque">
+      <h2>Promedio por estación</h2>
+      <p class="nota">Haz clic en una barra para filtrar toda la página por esa estación. La línea punteada marca la guía de la OMS.</p>
+      <div id="g_ranking" class="grafica"></div>
+    </div>
+    <div class="bloque">
+      <h2>Semáforo de estaciones</h2>
+      <p class="nota">Ordenadas de peor a mejor aire en el periodo seleccionado.</p>
+      <div class="tabla-envoltura">
+        <table id="tabla_semaforo">
+          <thead>
+            <tr>
+              <th scope="col">Estación</th>
+              <th scope="col">Municipio</th>
+              <th scope="col" class="num">PM2.5</th>
+              <th scope="col" class="celda-barra">Frente a la guía OMS</th>
+              <th scope="col">Categoría ICA</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tablero" id="panel_patrones" role="tabpanel" aria-labelledby="tab_patrones" tabindex="0" hidden>
+    <div class="bloque">
+      <h2>A qué horas se contamina más el aire</h2>
+      <p class="nota">Promedio por hora del día. El pico de la mañana coincide con la hora pico vehicular.</p>
+      <div id="g_hora" class="grafica"></div>
+    </div>
+    <div class="bloque">
+      <h2>Qué meses son los más críticos</h2>
+      <p class="nota">Febrero y marzo coinciden con la temporada de menor dispersión atmosférica en el valle.</p>
+      <div id="g_mes" class="grafica"></div>
+    </div>
+  </section>
+
+  <section class="hallazgos">
+    <h2>Lo que dicen los datos</h2>
+    <p class="nota">Estas cifras se recalculan con los filtros que tengas puestos.</p>
+    <ul class="lista-hallazgos" id="lista_hallazgos"></ul>
+  </section>
+
+</main>
+
+<!-- ============ pie ============ -->
+<footer>
+  <div class="contenedor">
+    <div class="rejilla">
+      <div>
+        <h3>De dónde salen los datos</h3>
+        <p>Dataset «Mediciones estaciones calidad del aire» del
+          <a href="https://datosabiertos.metropol.gov.co/node/99" target="_blank" rel="noopener">Portal de Datos Abiertos
+          del Área Metropolitana del Valle de Aburrá</a>, red de monitoreo de SIATA.</p>
+      </div>
+      <div>
+        <h3>Cómo se limpiaron</h3>
+        <p>Se aplicó la bandera de calidad de SIATA y se descartaron los valores centinela
+          −9999 y 99999. Quedaron 147.235 registros horarios válidos de 18 estaciones,
+          agregados a promedios diarios y por hora.</p>
+      </div>
+      <div>
+        <h3>Con qué está hecho</h3>
+        <ul>
+          <li>Python y Pandas para la limpieza</li>
+          <li>Plotly para las gráficas</li>
+          <li>Streamlit para la versión con IA</li>
+          <li>Groq (gpt-oss-120b) para el informe y el chat</li>
+        </ul>
+      </div>
+    </div>
+    <p class="credito">RespirAburrá · Proyecto final de Análisis de Datos.
+      Esta página es informativa y no reemplaza los boletines oficiales de calidad del aire del Área Metropolitana.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdn.plot.ly/plotly-locale-es-latest.js" charset="utf-8"></script>
+<script src="datos.js"></script>
+<script>
+/* ============================================================
+   RespirAburrá — lógica del tablero
+   Estructura de DATOS:
+     estaciones: {c: código, e: sigla, n: nombre, m: municipio}
+     diario:     [código, "AAAA-MM-DD", pm25, nº de mediciones]
+     mes_hora:   [código, "AAAA-MM", hora, pm25, nº de mediciones]
+   ============================================================ */
+
+// ---------- constantes ----------
+const OMS = 15;      // guía diaria de la OMS
+const NORMA = 37;    // norma colombiana diaria
+
+const CATEGORIAS = ["Buena", "Aceptable", "Dañina para grupos sensibles", "Dañina para la salud"];
+const COLOR_ICA = {
+  "Buena": "#3FA34D",
+  "Aceptable": "#E4B22B",
+  "Dañina para grupos sensibles": "#E07C2B",
+  "Dañina para la salud": "#CB4034"
+};
+
+// el valle corre de sur a norte; sirve para ordenar las estaciones en la portada
+const ORDEN_VALLE = ["Caldas", "La Estrella", "Sabaneta", "Itagüí", "Envigado",
+                     "Medellín", "Bello", "Copacabana", "Girardota", "Barbosa"];
+
+const MESES_NOMBRE = ["ene", "feb", "mar", "abr", "may", "jun",
+                      "jul", "ago", "sep", "oct", "nov", "dic"];
+
+const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// categorías del ICA para PM2.5 en 24 horas (Resolución 2254 de 2017)
+function categoria(v) {
+  if (v <= 12.5) return "Buena";
+  if (v <= 37.5) return "Aceptable";
+  if (v <= 55.4) return "Dañina para grupos sensibles";
+  return "Dañina para la salud";
+}
+
+// ---------- índices y periodos derivados de los datos ----------
+const porCodigo = {};
+DATOS.estaciones.forEach(e => porCodigo[e.c] = e);
+
+const MUNICIPIOS = [...new Set(DATOS.estaciones.map(e => e.m))]
+  .sort((a, b) => ORDEN_VALLE.indexOf(a) - ORDEN_VALLE.indexOf(b));
+
+const MESES = [...new Set(DATOS.mes_hora.map(f => f[1]))].sort();
+
+// los periodos se derivan de los datos, no se escriben a mano
+const PERIODOS = {
+  todo:    { texto: "Año completo", meses: null },
+  critica: { texto: "Temporada crítica (feb–mar)",
+             meses: MESES.filter(m => m.endsWith("-02") || m.endsWith("-03")) },
+  ult3:    { texto: "Últimos 3 meses", meses: MESES.slice(-3) }
+};
+
+// ---------- estado ----------
+const filtro = { municipios: new Set(), periodo: "todo", estacion: null };
+let pestanaActiva = "tendencia";
+
+// ---------- utilidades de datos ----------
+function estacionesActivas() {
+  return DATOS.estaciones.filter(e =>
+    (filtro.municipios.size === 0 || filtro.municipios.has(e.m)) &&
+    (filtro.estacion === null || e.c === filtro.estacion));
+}
+
+function filtrarPor(tabla, iMes) {
+  const codigos = new Set(estacionesActivas().map(e => e.c));
+  const meses = PERIODOS[filtro.periodo].meses;
+  return tabla.filter(f => codigos.has(f[0]) &&
+    (!meses || meses.includes(iMes === 1 ? f[1] : f[1].slice(0, 7))));
+}
+const diarioFiltrado  = () => filtrarPor(DATOS.diario, 0);
+const mesHoraFiltrado = () => filtrarPor(DATOS.mes_hora, 1);
+
+// promedio ponderado por número de mediciones (igual que en la app de Streamlit)
+function promedioPonderado(filas, iValor, iPeso) {
+  let suma = 0, peso = 0;
+  for (const f of filas) { suma += f[iValor] * f[iPeso]; peso += f[iPeso]; }
+  return peso ? suma / peso : 0;
+}
+
+// agrupa filas por una clave y promedia (ponderado si se pasa iPeso)
+function agrupar(filas, clave, iValor, iPeso) {
+  const grupos = new Map();
+  for (const f of filas) {
+    const k = clave(f);
+    if (!grupos.has(k)) grupos.set(k, []);
+    grupos.get(k).push(f);
+  }
+  return [...grupos.keys()].sort().map(k => ({
+    clave: k,
+    n: grupos.get(k).length,
+    valor: iPeso === undefined
+      ? grupos.get(k).reduce((s, f) => s + f[iValor], 0) / grupos.get(k).length
+      : promedioPonderado(grupos.get(k), iValor, iPeso)
+  }));
+}
+
+const num = (v, d = 1) => v.toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = v => Math.round(v * 100);
+const porc = v => `${Math.round(v * 100)}&nbsp;%`;
+function fechaCorta(iso) {
+  const [a, m, d] = iso.split("-");
+  return `${+d} de ${["enero","febrero","marzo","abril","mayo","junio","julio","agosto",
+    "septiembre","octubre","noviembre","diciembre"][+m - 1]} de ${a}`;
+}
+const mesCorto = clave => `${MESES_NOMBRE[+clave.slice(5) - 1]} ${clave.slice(2, 4)}`;
+const mesLargo = clave => `${MESES_NOMBRE[+clave.slice(5) - 1]} ${clave.slice(0, 4)}`;
+const hora12 = h => h === 0 ? "12 a.m." : h < 12 ? `${h} a.m.` : h === 12 ? "12 m." : `${h - 12} p.m.`;
+
+// ============================================================
+//  PORTADA: corte del valle
+// ============================================================
+const SUELO = 254;          // y del suelo del valle en el viewBox
+const TECHO = 82;           // y máxima que puede alcanzar la niebla
+const TOPE = 45;            // µg/m³ que corresponden a la altura máxima
+const X0 = 340, X1 = 860;   // extremos del suelo donde se ubican las estaciones
+
+const alturaNiebla = v => Math.min(Math.max(v, 0) / TOPE, 1) * (SUELO - TECHO);
+
+// estaciones ordenadas sur → norte y repartidas por el suelo del valle
+const ESTACIONES_ORDENADAS = [...DATOS.estaciones].sort((a, b) =>
+  (ORDEN_VALLE.indexOf(a.m) - ORDEN_VALLE.indexOf(b.m)) || a.e.localeCompare(b.e));
+
+const xDeEstacion = {};
+ESTACIONES_ORDENADAS.forEach((e, i) => {
+  xDeEstacion[e.c] = X0 + (X1 - X0) * i / (ESTACIONES_ORDENADAS.length - 1);
+});
+
+const NS = "http://www.w3.org/2000/svg";
+
+function dibujarValleFijo() {
+  // línea punteada de la guía de la OMS
+  const y = SUELO - alturaNiebla(OMS);
+  const g = document.getElementById("linea_oms");
+  g.querySelector("line").setAttribute("y1", y);
+  g.querySelector("line").setAttribute("y2", y);
+  g.querySelector("text").setAttribute("y", y + 21);
+
+  // etiquetas de municipio bajo el suelo, en dos filas alternas para que no se pisen
+  const cont = document.getElementById("municipios_valle");
+  const clave = new Set(["Caldas", "Medellín", "Barbosa"]);
+  MUNICIPIOS.forEach((m, i) => {
+    const xs = DATOS.estaciones.filter(e => e.m === m).map(e => xDeEstacion[e.c]);
+    const x = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const fila = i % 2;
+    const esClave = clave.has(m);
+
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "etq-mun" + (esClave ? " clave" : ""));
+
+    const l = document.createElementNS(NS, "line");
+    l.setAttribute("x1", x); l.setAttribute("x2", x);
+    l.setAttribute("y1", SUELO + 9);
+    l.setAttribute("y2", SUELO + (fila ? 30 : 14));
+    l.setAttribute("stroke", "#2C4C5D");
+    l.setAttribute("stroke-width", "1.2");
+    g.appendChild(l);
+
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("x", x);
+    t.setAttribute("y", SUELO + (fila ? 45 : 29));
+    t.setAttribute("text-anchor", "middle");
+    t.setAttribute("fill", esClave ? "#B7C9D3" : "#93AAB8");
+    t.setAttribute("font-size", "15");
+    t.setAttribute("font-family", "IBM Plex Sans, sans-serif");
+    t.textContent = m;
+    g.appendChild(t);
+
+    cont.appendChild(g);
+  });
+}
+
+// tween sencillo para la altura de la niebla (una sola animación en la página)
+let animacionActual = null;
+function subirNiebla(destino) {
+  const rect = document.getElementById("niebla");
+  const desde = +rect.getAttribute("height") || 0;
+  if (sinMovimiento) { aplicar(destino); return; }
+  if (animacionActual) cancelAnimationFrame(animacionActual);
+  const t0 = performance.now(), dur = 650;
+  (function paso(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    const suave = 1 - Math.pow(1 - p, 3);
+    aplicar(desde + (destino - desde) * suave);
+    if (p < 1) animacionActual = requestAnimationFrame(paso);
+  })(t0);
+
+  function aplicar(h) {
+    rect.setAttribute("height", h);
+    rect.setAttribute("y", SUELO - h);
+    const borde = document.getElementById("niebla_borde");
+    borde.setAttribute("y1", SUELO - h);
+    borde.setAttribute("y2", SUELO - h);
+    borde.setAttribute("opacity", h > 2 ? 1 : 0);
+  }
+}
+
+function pintarValle(diario, promedio) {
+  subirNiebla(alturaNiebla(promedio));
+
+  // el color de la niebla sigue la categoría del promedio
+  const color = COLOR_ICA[categoria(promedio)];
+  document.getElementById("niebla_top").setAttribute("stop-color", color);
+  document.getElementById("niebla_mid").setAttribute("stop-color", color);
+  document.getElementById("niebla_bot").setAttribute("stop-color", color);
+  document.getElementById("niebla_borde").setAttribute("stroke", color);
+
+  // un punto por estación, con el color de su propia categoría
+  const promPorEst = {};
+  agrupar(diario, f => f[0], 2).forEach(r => promPorEst[r.clave] = r.valor);
+
+  const cont = document.getElementById("estaciones_valle");
+  cont.textContent = "";
+  ESTACIONES_ORDENADAS.forEach(e => {
+    const v = promPorEst[e.c];
+    const activa = v !== undefined;
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "punto-est");
+    g.setAttribute("tabindex", activa ? "0" : "-1");
+    g.setAttribute("role", "button");
+    g.setAttribute("aria-label", activa
+      ? `${e.n}: ${num(v)} microgramos por metro cúbico. Filtrar por esta estación.`
+      : `${e.n}: sin datos con estos filtros.`);
+
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", xDeEstacion[e.c]);
+    c.setAttribute("cy", SUELO);
+    c.setAttribute("r", activa ? 7 : 4);
+    c.setAttribute("fill", activa ? COLOR_ICA[categoria(v)] : "#2C4C5D");
+    c.setAttribute("stroke", "#0B1A24");
+    c.setAttribute("stroke-width", "1.6");
+    g.appendChild(c);
+
+    const t = document.createElementNS(NS, "title");
+    t.textContent = activa ? `${e.n} · ${num(v)} µg/m³` : `${e.n} · sin datos`;
+    g.appendChild(t);
+
+    if (activa) {
+      const elegir = () => { filtro.estacion = e.c; pintar(); };
+      g.addEventListener("click", elegir);
+      g.addEventListener("keydown", ev => {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); elegir(); }
+      });
+    }
+    cont.appendChild(g);
+  });
+}
+
+// ============================================================
+//  FILTROS
+// ============================================================
+function chip(texto, activo, alHacerClic, clase = "chip") {
+  const b = document.createElement("button");
+  b.className = clase;
+  b.type = "button";
+  b.textContent = texto;
+  b.setAttribute("aria-pressed", activo ? "true" : "false");
+  b.onclick = alHacerClic;
+  return b;
+}
+
+function pintarFiltros() {
+  const cm = document.getElementById("chips_municipio");
+  cm.textContent = "";
+  cm.appendChild(chip("Todo el valle", filtro.municipios.size === 0,
+    () => { filtro.municipios.clear(); filtro.estacion = null; pintar(); }));
+  MUNICIPIOS.forEach(m => cm.appendChild(chip(m, filtro.municipios.has(m), () => {
+    filtro.municipios.has(m) ? filtro.municipios.delete(m) : filtro.municipios.add(m);
+    filtro.estacion = null;
+    pintar();
+  })));
+
+  const cp = document.getElementById("chips_periodo");
+  cp.textContent = "";
+  Object.keys(PERIODOS).forEach(p => cp.appendChild(chip(PERIODOS[p].texto, filtro.periodo === p,
+    () => { filtro.periodo = p; pintar(); })));
+
+  const fila = document.getElementById("fila_estacion");
+  const ce = document.getElementById("chip_estacion");
+  ce.textContent = "";
+  if (filtro.estacion !== null) {
+    fila.hidden = false;
+    const e = porCodigo[filtro.estacion];
+    const b = chip(`${e.n}  ✕`, false, () => { filtro.estacion = null; pintar(); }, "chip chip-estacion");
+    b.setAttribute("aria-label", `Quitar el filtro de la estación ${e.n}`);
+    b.removeAttribute("aria-pressed");
+    ce.appendChild(b);
+  } else {
+    fila.hidden = true;
+  }
+}
+
+// ============================================================
+//  INDICADORES
+// ============================================================
+function pintarKpis(diario) {
+  const caja = document.getElementById("kpis");
+  const promedio = promedioPonderado(diario, 2, 3);
+  const serie = agrupar(diario, f => f[1], 2);
+  const sobreOms = serie.filter(d => d.valor > OMS).length;
+  const diasNorma = new Set(diario.filter(f => f[2] > NORMA).map(f => f[1])).size;
+  const ranking = agrupar(diario, f => f[0], 2);
+  const peor = ranking.reduce((a, b) => b.valor > a.valor ? b : a);
+  const cat = categoria(promedio);
+
+  caja.innerHTML = `
+    <div class="kpi">
+      <div class="cifra">${num(promedio)}<u>µg/m³</u></div>
+      <div class="rotulo">Promedio de PM2.5 · ${num(promedio / OMS)}× la guía de la OMS</div>
+      <div class="barrita"><i style="width:${Math.min(promedio / TOPE * 100, 100)}%;background:${COLOR_ICA[cat]}"></i></div>
+    </div>
+    <div class="kpi">
+      <div class="cifra">${sobreOms}<u>de ${serie.length} días</u></div>
+      <div class="rotulo">Por encima de la guía de la OMS · ${porc(sobreOms / serie.length)} del periodo</div>
+      <div class="barrita"><i style="width:${pct(sobreOms / serie.length)}%"></i></div>
+    </div>
+    <div class="kpi">
+      <div class="cifra">${diasNorma}<u>días</u></div>
+      <div class="rotulo">Con alguna estación sobre la norma colombiana (37 µg/m³)</div>
+      <div class="barrita"><i style="width:${pct(diasNorma / serie.length)}%"></i></div>
+    </div>
+    <div class="kpi">
+      <div class="cifra">${num(peor.valor)}<u>µg/m³</u></div>
+      <div class="rotulo">Estación más contaminada: ${porCodigo[peor.clave].n}</div>
+      <div class="barrita"><i style="width:${Math.min(peor.valor / TOPE * 100, 100)}%;background:${COLOR_ICA[categoria(peor.valor)]}"></i></div>
+    </div>`;
+
+  document.getElementById("lectura").innerHTML =
+    `Con los filtros actuales el aire promedia <b>${num(promedio)} µg/m³</b> — categoría ${cat.toLowerCase()},
+     ${num(promedio / OMS)} veces la guía diaria de la OMS.`;
+
+  return { promedio, serie, sobreOms, diasNorma, ranking };
+}
+
+// ============================================================
+//  GRÁFICAS
+// ============================================================
+const config = { responsive: true, displayModeBar: false, locale: "es" };
+
+// Plotly completa y MODIFICA el objeto de layout que recibe. Si se comparte uno
+// solo entre gráficas, el tipo de eje que Plotly deduce en una (por ejemplo
+// "date" en la serie diaria) se contagia a las demás. Por eso cada gráfica
+// construye su propio layout desde cero.
+const eje = () => ({
+  gridcolor: "#EDF2F4", zeroline: false, linecolor: "#D6DFE4",
+  ticks: "outside", ticklen: 4, tickcolor: "#D6DFE4", automargin: true
+});
+const disenio = (extra = {}) => Object.assign({
+  paper_bgcolor: "rgba(0,0,0,0)",
+  plot_bgcolor: "rgba(0,0,0,0)",
+  font: { family: "IBM Plex Sans, sans-serif", size: 12, color: "#5A7181" },
+  hoverlabel: { bgcolor: "#10222D", bordercolor: "#10222D",
+                font: { family: "IBM Plex Sans, sans-serif", color: "#fff", size: 12 } },
+  xaxis: eje(), yaxis: eje(),
+  margin: { t: 10, r: 16, b: 40, l: 46 },
+  showlegend: false, height: 300
+}, extra);
+
+const rotuloEje = t => ({ text: t, font: { size: 11, color: "#8296A3" }, standoff: 12 });
+const LINEA_OMS = { color: "#E07C2B", dash: "4px,5px", width: 1.3 };
+const LINEA_NORMA = { color: "#CB4034", dash: "4px,5px", width: 1.3 };
+
+function hayPlotly(...ids) {
+  if (window.Plotly) return true;
+  ids.forEach(id => {
+    const d = document.getElementById(id);
+    if (d) d.innerHTML = '<p class="vacio"><strong>No se pudieron cargar las gráficas</strong>' +
+      'Revisa la conexión a internet: la librería Plotly se carga desde un CDN.</p>';
+  });
+  return false;
+}
+
+function pintarTendencia(diario) {
+  if (!hayPlotly("g_serie", "g_ica")) return;
+  const serie = agrupar(diario, f => f[1], 2);
+
+  Plotly.react("g_serie", [{
+    x: serie.map(d => d.clave),
+    y: serie.map(d => +d.valor.toFixed(1)),
+    mode: "lines", line: { color: "#22758C", width: 1.6, shape: "spline", smoothing: .4 },
+    fill: "tozeroy", fillcolor: "rgba(34,117,140,.09)",
+    hovertemplate: "%{x|%d %b %Y}<br><b>%{y} µg/m³</b><extra></extra>"
+  }], disenio({
+    height: 330,
+    xaxis: { ...eje(), type: "date" },
+    yaxis: { ...eje(), title: rotuloEje("PM2.5 diario (µg/m³)"), rangemode: "tozero" },
+    shapes: [
+      { type: "line", xref: "paper", x0: 0, x1: 1, y0: OMS, y1: OMS, line: LINEA_OMS },
+      { type: "line", xref: "paper", x0: 0, x1: 1, y0: NORMA, y1: NORMA, line: LINEA_NORMA }
+    ],
+    annotations: [
+      { xref: "paper", x: 1, xanchor: "right", y: OMS, yanchor: "bottom",
+        text: "guía OMS · 15", showarrow: false, font: { color: "#C06A1F", size: 11 },
+        bgcolor: "rgba(255,255,255,.88)", borderpad: 2 },
+      { xref: "paper", x: 1, xanchor: "right", y: NORMA, yanchor: "bottom",
+        text: "norma colombiana · 37", showarrow: false, font: { color: "#CB4034", size: 11 },
+        bgcolor: "rgba(255,255,255,.88)", borderpad: 2 }
+    ]
+  }), config);
+
+  // distribución por categoría del ICA, en orden fijo
+  const conteo = {};
+  diario.forEach(f => { const c = categoria(f[2]); conteo[c] = (conteo[c] || 0) + 1; });
+  const cats = CATEGORIAS.filter(c => conteo[c]);
+  const total = diario.length;
+
+  Plotly.react("g_ica", [{
+    x: cats.map(c => conteo[c]), y: cats.map(c => c.replace(" para ", "<br>para ")),
+    type: "bar", orientation: "h",
+    marker: { color: cats.map(c => COLOR_ICA[c]) },
+    text: cats.map(c => `${pct(conteo[c] / total)} %`),
+    textposition: "auto", insidetextfont: { color: "#fff" }, outsidetextfont: { color: "#5A7181" },
+    hovertemplate: "%{y}<br><b>%{x} días-estación</b><extra></extra>"
+  }], disenio({
+    height: 220, margin: { t: 6, r: 20, b: 42, l: 10 },
+    xaxis: { ...eje(), type: "linear", title: rotuloEje("días-estación") },
+    yaxis: { ...eje(), type: "category", autorange: "reversed", showgrid: false }
+  }), config);
+
+}
+
+let clicEnRankingListo = false;
+function pintarEstaciones(diario) {
+  if (!hayPlotly("g_ranking")) return;
+  const ranking = agrupar(diario, f => f[0], 2)
+    .map(r => ({ ...porCodigo[r.clave], pm25: +r.valor.toFixed(1), cat: categoria(r.valor) }))
+    .sort((a, b) => a.pm25 - b.pm25);
+
+  Plotly.react("g_ranking", [{
+    x: ranking.map(r => r.pm25), y: ranking.map(r => r.e),
+    customdata: ranking.map(r => [r.n, r.m, r.c]),
+    type: "bar", orientation: "h",
+    marker: { color: ranking.map(r => COLOR_ICA[r.cat]) },
+    text: ranking.map(r => num(r.pm25)), textposition: "outside",
+    outsidetextfont: { color: "#5A7181", size: 11 },
+    hovertemplate: "<b>%{customdata[0]}</b><br>%{customdata[1]} · %{x} µg/m³" +
+                   "<br><i>clic para filtrar por esta estación</i><extra></extra>"
+  }], disenio({
+    height: Math.max(230, 40 + ranking.length * 26),
+    margin: { t: 6, r: 46, b: 42, l: 10 },
+    xaxis: { ...eje(), type: "linear", title: rotuloEje("PM2.5 promedio (µg/m³)"), rangemode: "tozero" },
+    yaxis: { ...eje(), type: "category", showgrid: false },
+    shapes: [{ type: "line", xref: "x", yref: "paper", y0: 0, y1: 1, x0: OMS, x1: OMS,
+               line: LINEA_OMS }]
+  }), config);
+
+  // el listener se registra una sola vez (si no, se acumulan en cada repintado)
+  const div = document.getElementById("g_ranking");
+  if (!clicEnRankingListo) {
+    div.on("plotly_click", ev => { filtro.estacion = ev.points[0].customdata[2]; pintar(); });
+    clicEnRankingListo = true;
+  }
+
+  document.querySelector("#tabla_semaforo tbody").innerHTML = [...ranking].reverse().map(r => `
+    <tr>
+      <td><button class="enlace-tabla" data-codigo="${r.c}" title="Filtrar por ${r.n}">${r.n}</button></td>
+      <td>${r.m}</td>
+      <td class="num">${num(r.pm25)} µg/m³</td>
+      <td class="celda-barra">
+        <div class="barra-valor" role="img" aria-label="${num(r.pm25 / OMS)} veces la guía de la OMS">
+          <i style="width:${Math.min(r.pm25 / TOPE * 100, 100)}%;background:${COLOR_ICA[r.cat]}"></i>
+          <u style="left:${OMS / TOPE * 100}%" title="guía de la OMS: 15 µg/m³"></u>
+        </div>
+      </td>
+      <td><span class="insignia" style="background:${COLOR_ICA[r.cat]}">${r.cat}</span></td>
+    </tr>`).join("");
+
+  document.querySelectorAll("#tabla_semaforo .enlace-tabla").forEach(b => {
+    b.onclick = () => { filtro.estacion = +b.dataset.codigo; pintar(); };
+  });
+}
+
+function pintarPatrones(mesHora) {
+  if (!hayPlotly("g_hora", "g_mes")) return;
+
+  const horas = agrupar(mesHora, f => String(f[2]).padStart(2, "0"), 3, 4);
+  Plotly.react("g_hora", [{
+    x: horas.map(h => +h.clave), y: horas.map(h => +h.valor.toFixed(1)),
+    mode: "lines", line: { color: "#22758C", width: 2, shape: "spline" },
+    fill: "tozeroy", fillcolor: "rgba(34,117,140,.12)",
+    hovertemplate: "%{x}:00 h<br><b>%{y} µg/m³</b><extra></extra>"
+  }], disenio({
+    height: 300,
+    xaxis: { ...eje(), type: "linear", title: rotuloEje("hora del día"),
+             dtick: 3, ticksuffix: " h" },
+    yaxis: { ...eje(), title: rotuloEje("PM2.5 (µg/m³)"), rangemode: "tozero" },
+    shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: OMS, y1: OMS, line: LINEA_OMS }],
+    annotations: [{ xref: "paper", x: 1, xanchor: "right", y: OMS, yanchor: "bottom",
+                    text: "guía OMS · 15", showarrow: false, font: { color: "#C06A1F", size: 11 },
+        bgcolor: "rgba(255,255,255,.88)", borderpad: 2 }]
+  }), config);
+
+  const meses = agrupar(mesHora, f => f[1], 3, 4);
+  Plotly.react("g_mes", [{
+    x: meses.map(m => mesCorto(m.clave)), y: meses.map(m => +m.valor.toFixed(1)),
+    type: "bar",
+    marker: { color: meses.map(m => COLOR_ICA[categoria(m.valor)]) },
+    hovertemplate: "%{x}<br><b>%{y} µg/m³</b><extra></extra>"
+  }], disenio({
+    height: 300,
+    xaxis: { ...eje(), type: "category", showgrid: false },
+    yaxis: { ...eje(), title: rotuloEje("PM2.5 (µg/m³)"), rangemode: "tozero" },
+    shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: OMS, y1: OMS, line: LINEA_OMS }],
+    annotations: [{ xref: "paper", x: 1, xanchor: "right", y: OMS, yanchor: "bottom",
+                    text: "guía OMS · 15", showarrow: false, font: { color: "#C06A1F", size: 11 },
+        bgcolor: "rgba(255,255,255,.88)", borderpad: 2 }]
+  }), config);
+}
+
+// ============================================================
+//  HALLAZGOS (se recalculan con los filtros)
+// ============================================================
+function pintarHallazgos(diario, mesHora, k) {
+  const items = [];
+  const limpia = k.ranking.reduce((a, b) => b.valor < a.valor ? b : a);
+  const peor = k.ranking.reduce((a, b) => b.valor > a.valor ? b : a);
+  const diaPeor = k.serie.reduce((a, b) => b.valor > a.valor ? b : a);
+
+  items.push([`${porc(k.sobreOms / k.serie.length)}`,
+    `de los días (${k.sobreOms} de ${k.serie.length}) el aire quedó por encima de la guía diaria de la OMS.`]);
+
+  if (k.ranking.length > 1) {
+    items.push([`${num(peor.valor - limpia.valor)} µg/m³`,
+      `separan la estación con peor aire (${porCodigo[peor.clave].n}) de la más limpia
+       (${porCodigo[limpia.clave].n}, ${num(limpia.valor)} µg/m³).`]);
+  }
+
+  const horas = agrupar(mesHora, f => f[2], 3, 4);
+  if (horas.length) {
+    const hPeor = horas.reduce((a, b) => b.valor > a.valor ? b : a);
+    const hMejor = horas.reduce((a, b) => b.valor < a.valor ? b : a);
+    items.push([hora12(+hPeor.clave),
+      `es la peor hora para salir a hacer ejercicio (${num(hPeor.valor)} µg/m³).
+       La mejor es a las ${hora12(+hMejor.clave)}, con ${num(hMejor.valor)}.`]);
+  }
+
+  const meses = agrupar(mesHora, f => f[1], 3, 4);
+  if (meses.length > 1) {
+    const mPeor = meses.reduce((a, b) => b.valor > a.valor ? b : a);
+    items.push([mesLargo(mPeor.clave),
+      `fue el mes más cargado (${num(mPeor.valor)} µg/m³), en la temporada de menor dispersión atmosférica.`]);
+  }
+
+  items.push([num(diaPeor.valor) + " µg/m³",
+    `fue el pico del periodo, el ${fechaCorta(diaPeor.clave)}.`]);
+
+  document.getElementById("lista_hallazgos").innerHTML = items.map(([dato, texto]) =>
+    `<li><span class="dato">${dato}</span><p>${texto}</p></li>`).join("");
+}
+
+// ============================================================
+//  PESTAÑAS
+// ============================================================
+const pestanas = [...document.querySelectorAll('[role="tab"]')];
+pestanas.forEach((t, i) => {
+  t.addEventListener("click", () => activarPestana(i));
+  t.addEventListener("keydown", ev => {
+    const salto = ev.key === "ArrowRight" ? 1 : ev.key === "ArrowLeft" ? -1 : 0;
+    if (!salto) return;
+    ev.preventDefault();
+    activarPestana((i + salto + pestanas.length) % pestanas.length, true);
+  });
+});
+
+function activarPestana(i, enfocar) {
+  pestanas.forEach((t, j) => {
+    const sel = i === j;
+    t.setAttribute("aria-selected", sel ? "true" : "false");
+    t.tabIndex = sel ? 0 : -1;
+    document.getElementById(t.getAttribute("aria-controls")).hidden = !sel;
+  });
+  if (enfocar) pestanas[i].focus();
+  pestanaActiva = pestanas[i].id.replace("tab_", "");
+  pintar();
+}
+
+// ============================================================
+//  ESTADO VACÍO Y PINTADO GENERAL
+// ============================================================
+function mostrarVacio() {
+  document.getElementById("kpis").innerHTML =
+    `<div class="vacio" style="grid-column:1/-1">
+       <strong>Ninguna estación tiene mediciones con estos filtros</strong>
+       Prueba con otro municipio o amplía el periodo.
+       <br><button type="button" id="btn_limpiar">Quitar todos los filtros</button>
+     </div>`;
+  document.getElementById("btn_limpiar").onclick = () => {
+    filtro.municipios.clear(); filtro.periodo = "todo"; filtro.estacion = null; pintar();
+  };
+  document.getElementById("lectura").textContent = "Sin mediciones para los filtros seleccionados.";
+  document.getElementById("lista_hallazgos").innerHTML = "";
+  subirNiebla(0);
+}
+
+function pintar() {
+  pintarFiltros();
+  const diario = diarioFiltrado();
+  if (!diario.length) { mostrarVacio(); return; }
+
+  const mesHora = mesHoraFiltrado();
+  const k = pintarKpis(diario);
+  pintarValle(diario, k.promedio);
+  pintarHallazgos(diario, mesHora, k);
+
+  if (pestanaActiva === "tendencia")  pintarTendencia(diario);
+  if (pestanaActiva === "estaciones") pintarEstaciones(diario);
+  if (pestanaActiva === "patrones")   pintarPatrones(mesHora);
+}
+
+// en pantallas angostas se acerca la vista al fondo del valle
+function ajustarValle() {
+  const svg = document.getElementById("svg_valle");
+  svg.setAttribute("viewBox", window.innerWidth < 620 ? "230 40 740 290" : "0 28 1200 302");
+}
+window.addEventListener("resize", ajustarValle);
+
+// ---------- arranque ----------
+ajustarValle();
+document.getElementById("link_app").href = "https://PENDIENTE.streamlit.app"; // actualizar tras el despliegue
+dibujarValleFijo();
+pintar();
+</script>
+</body>
+</html>

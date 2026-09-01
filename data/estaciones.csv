@@ -1,0 +1,19 @@
+codigo,estacion,nombre_corto,municipio,lat,lon
+12,Estación Tráfico Centro,CEN-TRAF,Medellín,6.2525611,-75.5695801
+28,Itagüí - Casa de Justicia Itagüí,ITA-CJUS,Itagüí,6.1856666,-75.5972061
+38,Itagüí - I.E. Concejo Municipal de Itagüí,ITA-CONC,Itagüí,6.1684971,-75.6443558
+44,"Medellín, El Poblado - Tanques La Ye EPM",MED-LAYE,Medellín,6.1825418,-75.5506363
+48,Estación Tráfico Sur,SUR-TRAF,La Estrella,6.1523128,-75.6274872
+69,Caldas - E U Joaquín Aristizabal,CAL-JOAR,Caldas,6.0930777,-75.637764
+78,La Estrella - Hospital,EST-HOSP,La Estrella,6.1555305,-75.6441727
+79,"Medellín, Altavista - I.E. Pedro Octavio Amado",MED-ALTA,Medellín,6.2218938,-75.6106033
+80,"Medellín, Villahermosa - Planta de producción de agua potable EPM",MED-VILL,Medellín,6.2589092,-75.5482635
+81,Barbosa - Torre Social,BAR-TORR,Barbosa,6.4369602,-75.3303986
+82,Copacabana - Ciudadela Educativa La Vida,COP-CVID,Copacabana,6.3453598,-75.5047531
+83,"Medellin, Belén - I.E Pedro Justo Berrio",MED-BEME,Medellín,6.2372341,-75.610466
+84,"Medellín, El Poblado - I.E INEM sede Santa Catalina",MED-TESO,Medellín,6.1998701,-75.5609512
+85,"Medellín, San Cristobal - Parque Biblioteca Fernando Botero",MED-SCRI,Medellín,6.2778502,-75.6364288
+86,"Medellín, Aranjuez - I.E Ciro Mendia",MED-ARAN,Medellín,6.2904806,-75.5555191
+87,Bello - I.E. Fernando Vélez,BEL-FEVE,Bello,6.3375502,-75.5678024
+88,Envigado - E.S.E. Santa Gertrudis,ENV-HOSP,Envigado,6.1686831,-75.5819702
+90,Sabaneta - I.E. Rafael J. Mejía,SAB-RAME,Sabaneta,6.1455002,-75.6212616
